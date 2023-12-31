@@ -61,7 +61,6 @@ type GetCurrentUserResponse struct {
 type MyClaims struct {
 	jwt.RegisteredClaims
 	ID       string `json:"id"`
-	Role     string `json:"role"`
 	Username string `json:"username"`
 }
 
