@@ -25,5 +25,5 @@ func main() {
 
 	router, _ := middleware.InitRouter(cfg, db)
 
-	http.ListenAndServe(":8080", &router)
+	http.ListenAndServe(":"+cfg.HttpPort, &router)
 }
