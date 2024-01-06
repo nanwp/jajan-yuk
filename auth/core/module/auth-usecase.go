@@ -23,6 +23,9 @@ func NewAuthUsecase(authRepo repository.AuthRepository) AuthUsecase {
 }
 
 func (a *authUsecase) Login(params entity.LoginRequest) (response entity.LoginResponse, err error) {
+	if err := params.Validate(); err != nil {
+		return entity.LoginResponse{}, err
+	}
 	response, err = a.authRepo.Login(params)
 	if err != nil {
 		return response, err
@@ -40,7 +43,14 @@ func (a *authUsecase) Login(params entity.LoginRequest) (response entity.LoginRe
 	response.AccessToken = accessToken
 	response.RefreshToken = refreshToken
 
-	if err := a.authRepo.StoredAccessTokenInRedis(accessToken, response.User.ID); err != nil {
+	role, err := a.authRepo.GetRoleByID(response.User.Role.ID)
+	if err != nil {
+		return response, err
+	}
+
+	response.User.Role = role
+
+	if err := a.authRepo.StoredAccessTokenInRedis(accessToken, response.User); err != nil {
 		return response, err
 	}
 
@@ -77,6 +87,18 @@ func (a *authUsecase) RefreshToken(params entity.RefreshTokenRequest) (response 
 	userID := claims["id"].(string)
 	username := claims["username"].(string)
 
+	user, err := a.authRepo.GetUserByID(userID)
+	if err != nil {
+		return entity.LoginResponse{}, err
+	}
+
+	role, err := a.authRepo.GetRoleByID(user.Role.ID)
+	if err != nil {
+		return entity.LoginResponse{}, err
+	}
+
+	user.Role = role
+
 	accessToken, err := a.generateAccessToken(userID, username)
 	if err != nil {
 		return response, err
@@ -90,7 +112,7 @@ func (a *authUsecase) RefreshToken(params entity.RefreshTokenRequest) (response 
 	response.AccessToken = accessToken
 	response.RefreshToken = refreshToken
 
-	if err := a.authRepo.StoredAccessTokenInRedis(accessToken, userID); err != nil {
+	if err := a.authRepo.StoredAccessTokenInRedis(accessToken, user); err != nil {
 		return response, err
 	}
 
@@ -102,34 +124,12 @@ func (a *authUsecase) RefreshToken(params entity.RefreshTokenRequest) (response 
 }
 
 func (a *authUsecase) GetCurrentUser(accessToken string) (response entity.GetCurrentUserResponse, err error) {
-	_, err = a.authRepo.GetAccessTokenFromRedis(accessToken)
+	user, err := a.authRepo.GetAccessTokenFromRedis(accessToken)
 	if err != nil {
 		return response, err
 	}
 
-	token, err := jwt.Parse(accessToken, func(token *jwt.Token) (interface{}, error) {
-		if method, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, entity.ErrorSigningMethodInvalid
-		} else if method != entity.JWT_SIGNING_METHOD {
-			return nil, entity.ErrorSigningMethodInvalid
-		}
-		return entity.JWT_SIGNATURE_KEY, nil
-	})
-	if err != nil {
-		return response, err
-	}
-
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		return response, entity.ErrorTokenInvalid
-	}
-
-	userID := claims["id"].(string)
-
-	response.User, err = a.authRepo.GetUserByID(userID)
-	if err != nil {
-		return response, err
-	}
+	response.User = user
 
 	return response, nil
 }

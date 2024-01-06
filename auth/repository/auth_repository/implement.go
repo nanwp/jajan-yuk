@@ -1,6 +1,7 @@
 package auth_repository
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gomodule/redigo/redis"
 	"github.com/nanwp/jajan-yuk/auth/core/entity"
@@ -16,6 +17,9 @@ type repository struct {
 }
 
 func NewAuthRepository(db *gorm.DB, redis *redis.Pool) repositoryintf.AuthRepository {
+	db.AutoMigrate(&User{})
+	db.AutoMigrate(&Role{})
+	db.AutoMigrate(&SecretKey{})
 	return &repository{db, redis}
 }
 
@@ -24,7 +28,7 @@ func (r *repository) Login(params entity.LoginRequest) (response entity.LoginRes
 	result := User{}
 
 	if err := db.Where("username = ?", params.Username).First(&result).Error; err != nil {
-		return response, err
+		return response, entity.ErrorUserNotFound
 	}
 
 	password, _ := helper.GeneratePasswordString(params.Password)
@@ -51,14 +55,15 @@ func (r *repository) GetUserByID(id string) (response entity.User, err error) {
 	return response, err
 }
 
-func (r *repository) StoredAccessTokenInRedis(token string, userID string) (err error) {
+func (r *repository) StoredAccessTokenInRedis(token string, user entity.User) (err error) {
 	conn := r.redis.Get()
 	defer conn.Close()
 
 	redisKey := fmt.Sprintf("access_token:%s", token)
 	expired := time.Now().Add(entity.LOGIN_EXPIRATION_DURATION).Unix()
+	value, _ := json.Marshal(user)
 
-	_, err = conn.Do("SET", redisKey, token, "EX", expired)
+	_, err = conn.Do("SET", redisKey, value, "EX", expired)
 	if err != nil {
 		return err
 	}
@@ -79,16 +84,22 @@ func (r *repository) StoredRefreshTokenInRedis(token string, userID string) (err
 	return nil
 }
 
-func (r *repository) GetAccessTokenFromRedis(token string) (resp string, err error) {
+func (r *repository) GetAccessTokenFromRedis(token string) (resp entity.User, err error) {
 	conn := r.redis.Get()
 	defer conn.Close()
 
 	redisKey := fmt.Sprintf("access_token:%s", token)
 
-	resp, err = redis.String(conn.Do("GET", redisKey))
+	respStr, err := redis.String(conn.Do("GET", redisKey))
 	if err != nil {
 		return resp, err
 	}
+
+	err = json.Unmarshal([]byte(respStr), &resp)
+	if err != nil {
+		return resp, err
+	}
+
 	return resp, nil
 }
 
@@ -141,4 +152,16 @@ func (r *repository) ValidateSecretKey(key string) (secretKey entity.SecretKey, 
 
 	secretKey = result.ToEntity()
 	return secretKey, nil
+}
+
+func (r *repository) GetRoleByID(id string) (role entity.Role, err error) {
+	db := r.db.Model(&Role{}).Where("id = ?", id)
+
+	result := Role{}
+
+	if err := db.First(&result).Error; err != nil {
+		return role, err
+	}
+
+	return result.ToEntity(), nil
 }

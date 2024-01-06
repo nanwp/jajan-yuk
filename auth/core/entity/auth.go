@@ -2,6 +2,8 @@ package entity
 
 import (
 	"errors"
+	"fmt"
+	"strings"
 	"time"
 
 	jwt "github.com/golang-jwt/jwt/v4"
@@ -30,6 +32,24 @@ var (
 type LoginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+}
+
+func (u *LoginRequest) Validate() error {
+	var msg []string
+
+	if u.Username == "" {
+		msg = append(msg, "Username required")
+	}
+
+	if u.Password == "" {
+		msg = append(msg, "Password required")
+	}
+
+	if len(msg) > 0 {
+		return fmt.Errorf("Validate Error: %v", strings.Join(msg, ", "))
+	}
+
+	return nil
 }
 
 type User struct {
