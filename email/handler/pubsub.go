@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"cloud.google.com/go/pubsub"
 	"context"
 	"github.com/nanwp/jajan-yuk/email/config"
 	"github.com/nanwp/jajan-yuk/email/core/entity"
