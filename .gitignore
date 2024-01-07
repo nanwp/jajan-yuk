@@ -1,1 +1,3 @@
 docker-compose-production.yml
+config/google-cloud-config.json
+.idea
