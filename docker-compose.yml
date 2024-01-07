@@ -8,12 +8,12 @@ services:
     ports:
       - "8480:8480"
     environment:
-      - HTTP_PORT:8480
-      - REDIS_HOST:redis
-      - REDIS_PORT:6379
-      - DB_HOST:103.171.182.206
-      - DB_USERNAME:postgres
-      - DB_PASSWORD:Latihan
+      - HTTP_PORT=8480
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - DB_HOST=localhost
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=password
     depends_on:
       - redis
 
