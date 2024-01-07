@@ -10,10 +10,12 @@ import (
 )
 
 func main() {
+	cfg := config.Get()
+	log.Println(&cfg.DBHost)
+
 	loc, _ := time.LoadLocation("Asia/Jakarta")
 	time.Local = loc
 	log.Println("starting server ... at", time.Now().Format("2006-01-02 15:04:05"))
-	cfg := config.Get()
 
 	db := conn.InitPostgreSQL(&cfg)
 

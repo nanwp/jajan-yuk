@@ -11,9 +11,9 @@ services:
       - HTTP_PORT:8480
       - REDIS_HOST:redis
       - REDIS_PORT:6379
-      - DB_HOST:localhost
+      - DB_HOST:103.171.182.206
       - DB_USERNAME:postgres
-      - DB_PASSWORD:password
+      - DB_PASSWORD:Latihan
     depends_on:
       - redis
 
