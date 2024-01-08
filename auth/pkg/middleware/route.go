@@ -21,6 +21,7 @@ func InitRouter(cfg config.Config, db *gorm.DB) (mux.Router, conn.CacheService) 
 
 	router.HandleFunc("/login", apiHttp.Login)
 	router.HandleFunc("/current-user", apiHttp.GetCurrentUser)
+	router.HandleFunc("/refresh", apiHttp.RefreshToken)
 
 	return *router, coreRedis
 }

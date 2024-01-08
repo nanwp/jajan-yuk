@@ -11,7 +11,6 @@ import (
 
 func main() {
 	cfg := config.Get()
-	log.Println(&cfg.DBHost)
 
 	loc, _ := time.LoadLocation("Asia/Jakarta")
 	time.Local = loc

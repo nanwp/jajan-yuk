@@ -111,6 +111,7 @@ func (a *authUsecase) RefreshToken(params entity.RefreshTokenRequest) (response 
 
 	response.AccessToken = accessToken
 	response.RefreshToken = refreshToken
+	response.User = user
 
 	if err := a.authRepo.StoredAccessTokenInRedis(accessToken, user); err != nil {
 		return response, err
