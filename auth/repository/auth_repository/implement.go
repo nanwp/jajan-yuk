@@ -17,9 +17,9 @@ type repository struct {
 }
 
 func NewAuthRepository(db *gorm.DB, redis *redis.Pool) repositoryintf.AuthRepository {
-	db.AutoMigrate(&User{})
-	db.AutoMigrate(&Role{})
-	db.AutoMigrate(&SecretKey{})
+	//db.AutoMigrate(&User{})
+	//db.AutoMigrate(&Role{})
+	//db.AutoMigrate(&SecretKey{})
 	return &repository{db, redis}
 }
 

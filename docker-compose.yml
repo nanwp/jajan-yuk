@@ -1,5 +1,21 @@
 version: '3.9'
 services:
+  user:
+    build: ./user
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/google-cloud-config.json
+      - HTTP_PORT=8480
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - DB_HOST=localhost
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=password
+      - BASE_URL=8081
+    volumes:
+      - ./config/google-cloud-config.json:/app/google-cloud-config.json
+    depends_on:
+      - redis
+
   email:
     build: ./email
     environment:
