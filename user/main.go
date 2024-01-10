@@ -14,7 +14,6 @@ func main() {
 
 	loc, _ := time.LoadLocation("Asia/Jakarta")
 	time.Local = loc
-	log.Println("starting server ... at", time.Now().Format("2006-01-02 15:04:05"))
 
 	db := conn.InitPostgreSQL(&cfg)
 
@@ -26,5 +25,6 @@ func main() {
 
 	router, _ := middleware.InitRouter(cfg, db)
 
-	http.ListenAndServe(":"+cfg.HttpPort, &router)
+	log.Printf("starting server at %v on port %v", time.Now().Format("2006-01-02 15:04:05"), cfg.HttpPort)
+	http.ListenAndServe(":"+cfg.HttpPort, router)
 }

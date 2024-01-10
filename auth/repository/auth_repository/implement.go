@@ -31,6 +31,10 @@ func (r *repository) Login(params entity.LoginRequest) (response entity.LoginRes
 		return response, entity.ErrorUserNotFound
 	}
 
+	if result.ActivatedAt.Valid == false {
+		return response, entity.ErrorUserNotActivated
+	}
+
 	password, _ := helper.GeneratePasswordString(params.Password)
 
 	if result.Password != password {

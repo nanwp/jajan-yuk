@@ -6,6 +6,7 @@ import (
 	"github.com/nanwp/jajan-yuk/user/core/entity"
 	"github.com/nanwp/jajan-yuk/user/core/module"
 	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -98,5 +99,42 @@ func (h httpHandler) Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h httpHandler) Verification(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var bodyBytes []byte
+	var err error
+	var response response
+
+	if r.Body != nil {
+		bodyBytes, err = ioutil.ReadAll(r.Body)
+		if err != nil {
+			if err != nil {
+				response.Message = err.Error()
+				response.Success = false
+				w.WriteHeader(http.StatusBadRequest)
+				json.NewEncoder(w).Encode(response)
+				return
+			}
+
+			defer r.Body.Close()
+		}
+	}
+
+	type token struct {
+		Token string `json:"token"`
+	}
+
+	tkn := token{}
+	err = json.Unmarshal(bodyBytes, &tkn)
+	log.Printf("token %v", tkn.Token)
+
+	if r.Method != http.MethodPost {
+		response.Message = "Method not Allow"
+		response.Success = false
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 
 }

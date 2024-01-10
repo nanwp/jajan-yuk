@@ -7,14 +7,21 @@ import (
 	"github.com/nanwp/jajan-yuk/auth/handler/api"
 	"github.com/nanwp/jajan-yuk/auth/pkg/conn"
 	"github.com/nanwp/jajan-yuk/auth/repository/auth_repository"
+	"github.com/rs/cors"
 	"gorm.io/gorm"
+	"net/http"
 )
 
-func InitRouter(cfg config.Config, db *gorm.DB) (mux.Router, conn.CacheService) {
+func InitRouter(cfg config.Config, db *gorm.DB) (http.Handler, conn.CacheService) {
 	coreRedis, redis := conn.InitRedis(cfg)
 
 	authRepository := auth_repository.NewAuthRepository(db, redis)
 	authUsecase := module.NewAuthUsecase(authRepository)
+
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000", "https://jajan-yuk.pegelinux.my.id"},
+		AllowCredentials: true,
+	})
 
 	router := mux.NewRouter()
 	apiHttp := api.NewHttpHandler(authUsecase)
@@ -23,5 +30,7 @@ func InitRouter(cfg config.Config, db *gorm.DB) (mux.Router, conn.CacheService) 
 	router.HandleFunc("/api/v1/current-user", apiHttp.GetCurrentUser)
 	router.HandleFunc("/api/v1/refresh", apiHttp.RefreshToken)
 
-	return *router, coreRedis
+	handler := c.Handler(router)
+
+	return handler, coreRedis
 }
