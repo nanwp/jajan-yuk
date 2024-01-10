@@ -11,10 +11,17 @@ import (
 
 type HttpHandler interface {
 	Register(w http.ResponseWriter, r *http.Request)
+	Verification(w http.ResponseWriter, r *http.Request)
 }
 
 type httpHandler struct {
 	userUsecase module.UserUsecase
+}
+
+func NewHttpHandler(userUsecase module.UserUsecase) HttpHandler {
+	return &httpHandler{
+		userUsecase: userUsecase,
+	}
 }
 
 type response struct {
@@ -63,9 +70,9 @@ func (h httpHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 	role := mux.Vars(r)["role"]
 
-	if role == "USER" {
+	if role == "user" {
 		user.Role.ID = "3e76048d-f9f2-4974-845f-60137f9e2f4b"
-	} else if role == "PEDAGANG" {
+	} else if role == "pedagang" {
 		user.Role.ID = "ea8e1e87-ae6e-44b1-9854-4dbb0c70a330"
 	} else {
 		response.Message = "bad request"
@@ -90,8 +97,6 @@ func (h httpHandler) Register(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func NewHttpHandler(userUsecase module.UserUsecase) HttpHandler {
-	return &httpHandler{
-		userUsecase: userUsecase,
-	}
+func (h httpHandler) Verification(w http.ResponseWriter, r *http.Request) {
+
 }

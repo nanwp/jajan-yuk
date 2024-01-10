@@ -21,7 +21,7 @@ func InitRouter(cfg config.Config, db *gorm.DB) (mux.Router, conn.CacheService) 
 	httpHandler := api.NewHttpHandler(userUsecase)
 
 	router := mux.NewRouter()
-	router.HandleFunc("/register/{role}", httpHandler.Register)
-
+	router.HandleFunc("/api/v1/register/{role}", httpHandler.Register)
+	//router.HandleFunc("/verify", httpHandler.Verification)
 	return *router, coreRedis
 }
