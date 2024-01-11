@@ -14,6 +14,28 @@ type repository struct {
 	redis *redis.Pool
 }
 
+func (r repository) GetUserByID(id string) (response entity.User, err error) {
+	db := r.db.Model(&User{}).Where("id = ?", id)
+
+	result := User{}
+
+	if err := db.First(&result).Error; err != nil {
+		return response, err
+	}
+
+	return result.ToEntity(), nil
+}
+
+func (r repository) ActivateUser(id string) error {
+	db := r.db.Model(&User{}).Where("id = ?", id)
+
+	if err := db.Update("activated_at", time.Now()).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r repository) GetRoleByID(id string) (role entity.Role, err error) {
 	db := r.db.Model(&Role{}).Where("id = ?", id)
 

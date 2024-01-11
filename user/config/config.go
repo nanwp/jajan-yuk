@@ -18,7 +18,7 @@ type Config struct {
 	TopicID   string `envconfig:"TOPIC_ID" default:"email"`
 
 	HttpPort string `envconfig:"HTTP_PORT" default:"8081"`
-	BaseUrl  string `envconfig:"BASE_URL" default:"localhost:8081"`
+	WebURL   string `envconfig:"WEB_URL" default:"http://localhost:3000"`
 
 	RedisHost     string `envconfig:"REDIS_HOST" default:"127.0.0.1"`
 	RedisPort     string `envconfig:"REDIS_PORT" default:"6379"`

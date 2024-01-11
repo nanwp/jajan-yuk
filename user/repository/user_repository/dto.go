@@ -39,6 +39,7 @@ func (u *User) ToEntity() entity.User {
 		Role: entity.Role{
 			ID: u.RoleID,
 		},
+		ActivatedAt: u.ActivatedAt,
 	}
 }
 

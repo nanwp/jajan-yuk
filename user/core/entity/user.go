@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"strings"
@@ -13,16 +14,21 @@ var (
 	ErrorTokenExpired = errors.New("token expired")
 )
 
+type ActivateAccount struct {
+	Token string `json:"token"`
+}
+
 type User struct {
-	ID             string    `json:"id,omitempty"`
-	Name           string    `json:"name,omitempty"`
-	Username       string    `json:"username,omitempty"`
-	Email          string    `json:"email,omitempty"`
-	Password       string    `json:"password,omitempty"`
-	Address        string    `json:"address,omitempty"`
-	DateOfBirthday time.Time `json:"date_of_birthday,omitempty"`
-	Image          string    `json:"image"`
-	Role           Role      `json:"role"`
+	ID             string       `json:"id,omitempty"`
+	Name           string       `json:"name,omitempty"`
+	Username       string       `json:"username,omitempty"`
+	Email          string       `json:"email,omitempty"`
+	Password       string       `json:"password,omitempty"`
+	Address        string       `json:"address,omitempty"`
+	DateOfBirthday time.Time    `json:"date_of_birthday,omitempty"`
+	Image          string       `json:"image"`
+	Role           Role         `json:"role"`
+	ActivatedAt    sql.NullTime `json:"activated_at"`
 }
 
 func (u *User) Validate() error {

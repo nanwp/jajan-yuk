@@ -13,12 +13,35 @@ import (
 
 type UserUsecase interface {
 	Register(ctx context.Context, user entity.User) (response entity.User, err error)
+	ActivateAccount(params entity.ActivateAccount) (response entity.User, err error)
 }
 
 type userUsecase struct {
 	cfg            config.Config
 	userRepo       repository.UserRepository
 	emailPublisher publisher.EmailPublisher
+}
+
+func (u userUsecase) ActivateAccount(params entity.ActivateAccount) (response entity.User, err error) {
+	if params.Token == "" {
+		return response, fmt.Errorf("token required")
+	}
+
+	id, err := u.userRepo.GetTokenFromRedis(params.Token)
+	if err != nil {
+		return response, fmt.Errorf("invalid or expired token")
+	}
+
+	user, err := u.userRepo.GetUserByID(id)
+	if err != nil {
+		return response, err
+	}
+
+	if user.ActivatedAt.Valid {
+		return response, fmt.Errorf("user ")
+	}
+
+	return
 }
 
 func (u userUsecase) Register(ctx context.Context, user entity.User) (response entity.User, err error) {
@@ -69,7 +92,7 @@ func (u userUsecase) Register(ctx context.Context, user entity.User) (response e
 		return response, err
 	}
 
-	url := fmt.Sprintf("%s/activate?token=%s", u.cfg.BaseUrl, token)
+	url := fmt.Sprintf("%s/verification?token=%s", u.cfg.WebURL, token)
 	body := helper.RegisterEmail(user.Name, strings.ToLower(user.Role.Name), url)
 
 	email := entity.Email{
