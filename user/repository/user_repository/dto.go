@@ -2,9 +2,10 @@ package user_repository
 
 import (
 	"database/sql"
+	"time"
+
 	"github.com/nanwp/jajan-yuk/user/core/entity"
 	"gorm.io/gorm"
-	"time"
 )
 
 type User struct {
@@ -53,6 +54,7 @@ func (u *User) FromEntity(user entity.User) {
 	u.Address = user.Address
 	u.RoleID = user.Role.ID
 	u.DateOfBirthday = user.DateOfBirthday
+	u.ActivatedAt = user.ActivatedAt
 }
 
 type Role struct {

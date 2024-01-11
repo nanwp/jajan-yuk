@@ -2,12 +2,12 @@ package api
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"net/http"
+
 	"github.com/gorilla/mux"
 	"github.com/nanwp/jajan-yuk/user/core/entity"
 	"github.com/nanwp/jajan-yuk/user/core/module"
-	"io/ioutil"
-	"log"
-	"net/http"
 )
 
 type HttpHandler interface {
@@ -125,7 +125,13 @@ func (h httpHandler) Verification(w http.ResponseWriter, r *http.Request) {
 
 	tkn := token{}
 	err = json.Unmarshal(bodyBytes, &tkn)
-	log.Printf("token %v", tkn.Token)
+	if err != nil {
+		response.Message = err.Error()
+		response.Success = false
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+		return
+	}
 
 	if r.Method != http.MethodPost {
 		response.Message = "Method not Allow"
@@ -135,6 +141,22 @@ func (h httpHandler) Verification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user, err := h.userUsecase.ActivateAccount(entity.ActivateAccount{
+		Token: tkn.Token,
+	})
+
+	if err != nil {
+		response.Message = err.Error()
+		response.Success = false
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	response.Data = user
+	response.Success = true
+	response.Message = "success activate account"
+	json.NewEncoder(w).Encode(response)
 	w.WriteHeader(http.StatusOK)
 
 }

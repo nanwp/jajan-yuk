@@ -7,7 +7,7 @@ type UserRepository interface {
 	GetUserByID(id string) (response entity.User, err error)
 	CheckUsername(username string) (bool, error)
 	CheckEmail(email string) (bool, error)
-	ActivateUser(id string) error
+	ActivateUser(user entity.User) error
 	StoredTokenToRedis(key, value string, ttl int) error
 	GetTokenFromRedis(key string) (value string, err error)
 	GetRoleByID(id string) (role entity.Role, err error)

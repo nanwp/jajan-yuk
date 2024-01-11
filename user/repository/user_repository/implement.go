@@ -2,11 +2,13 @@ package user_repository
 
 import (
 	"errors"
+	"log"
+	"time"
+
 	"github.com/gomodule/redigo/redis"
 	"github.com/nanwp/jajan-yuk/user/core/entity"
 	repository_intf "github.com/nanwp/jajan-yuk/user/core/repository"
 	"gorm.io/gorm"
-	"time"
 )
 
 type repository struct {
@@ -26,10 +28,17 @@ func (r repository) GetUserByID(id string) (response entity.User, err error) {
 	return result.ToEntity(), nil
 }
 
-func (r repository) ActivateUser(id string) error {
-	db := r.db.Model(&User{}).Where("id = ?", id)
+func (r repository) ActivateUser(user entity.User) error {
+	db := r.db.Model(&User{}).Where("id = ?", user.ID)
 
-	if err := db.Update("activated_at", time.Now()).Error; err != nil {
+	value := User{}
+	value.FromEntity(user)
+	value.UpdatedAt = time.Now()
+	value.ActivatedAt.Valid = true
+	value.ActivatedAt.Time = time.Now()
+	value.UpdatedBy = user.ID
+
+	if err := db.Updates(&value).Error; err != nil {
 		return err
 	}
 
@@ -54,9 +63,9 @@ func (r repository) GetTokenFromRedis(key string) (value string, err error) {
 	conn := r.redis.Get()
 	defer conn.Close()
 
-	value, err = redis.String(conn.Do("GET", value))
+	value, err = redis.String(conn.Do("GET", key))
 	if err != nil {
-		return value, entity.ErrorTokenExpired
+		return value, err
 	}
 
 	return
@@ -66,9 +75,10 @@ func (r repository) StoredTokenToRedis(key, value string, ttl int) error {
 	conn := r.redis.Get()
 	defer conn.Close()
 
-	expTime := time.Minute * time.Duration(ttl)
+	expTime := int(time.Duration(ttl) * time.Minute / time.Second)
+	log.Printf("token can expire in %d minute", ttl)
 
-	_, err := conn.Do("SET", key, value, "EX", expTime.Seconds())
+	_, err := conn.Do("SETEX", key, expTime, value)
 	if err != nil {
 		return err
 	}
@@ -110,6 +120,8 @@ func (r repository) AddUser(user entity.User) (response entity.User, err error) 
 	value.FromEntity(user)
 	value.CreatedAt = time.Now()
 	value.UpdatedAt = time.Now()
+	value.CreatedBy = "REGISTER"
+	value.UpdatedBy = "REGISTER"
 
 	if err := db.Create(&value).Error; err != nil {
 		return response, err

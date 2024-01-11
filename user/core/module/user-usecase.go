@@ -3,12 +3,15 @@ package module
 import (
 	"context"
 	"fmt"
+	"log"
+	"strings"
+	"time"
+
 	"github.com/nanwp/jajan-yuk/user/config"
 	"github.com/nanwp/jajan-yuk/user/core/entity"
 	"github.com/nanwp/jajan-yuk/user/core/publisher"
 	"github.com/nanwp/jajan-yuk/user/core/repository"
 	"github.com/nanwp/jajan-yuk/user/pkg/helper"
-	"strings"
 )
 
 type UserUsecase interface {
@@ -29,6 +32,7 @@ func (u userUsecase) ActivateAccount(params entity.ActivateAccount) (response en
 
 	id, err := u.userRepo.GetTokenFromRedis(params.Token)
 	if err != nil {
+		log.Println(err.Error())
 		return response, fmt.Errorf("invalid or expired token")
 	}
 
@@ -38,9 +42,18 @@ func (u userUsecase) ActivateAccount(params entity.ActivateAccount) (response en
 	}
 
 	if user.ActivatedAt.Valid {
-		return response, fmt.Errorf("user ")
+		return response, fmt.Errorf("user are already activated")
 	}
 
+	user.ActivatedAt.Valid = true
+	user.ActivatedAt.Time = time.Now()
+
+	err = u.userRepo.ActivateUser(user)
+	if err != nil {
+		return response, err
+	}
+
+	response = user
 	return
 }
 
