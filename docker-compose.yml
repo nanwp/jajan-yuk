@@ -13,6 +13,7 @@ services:
       - DB_USERNAME=postgres
       - DB_PASSWORD=password
       - WEB_URL=https://localhot:3000
+      - TZ=Asia/Jakarta
     volumes:
       - ./config/google-cloud-config.json:/app/google-cloud-config.json
     depends_on:
