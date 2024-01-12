@@ -58,6 +58,7 @@ func (a *authUsecase) Login(params entity.LoginRequest) (response entity.LoginRe
 		return response, err
 	}
 
+	response.User.Password = ""
 	return response, err
 }
 
@@ -121,6 +122,7 @@ func (a *authUsecase) RefreshToken(params entity.RefreshTokenRequest) (response 
 		return response, err
 	}
 
+	response.User.Password = ""
 	return response, nil
 }
 
@@ -132,6 +134,7 @@ func (a *authUsecase) GetCurrentUser(accessToken string) (response entity.GetCur
 
 	response.User = user
 
+	response.User.Password = ""
 	return response, nil
 }
 

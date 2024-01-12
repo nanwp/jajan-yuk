@@ -131,6 +131,8 @@ func (u userUsecase) Register(ctx context.Context, user entity.User) (response e
 		return entity.User{}, err
 	}
 
+	response.Password = ""
+
 	return response, nil
 }
 
