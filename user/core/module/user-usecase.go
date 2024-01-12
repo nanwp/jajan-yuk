@@ -72,8 +72,8 @@ func (u userUsecase) RequestResetPassword(ctx context.Context, params entity.Req
 		return err
 	}
 
-	timeNow := time.Now().Format("02/January/2006 15:04:05")
-	timeExpired := time.Now().Add(time.Minute * 10).Format("02/January/2006 15:04:05")
+	timeNow := helper.GetCurrentTime().Format("02/January/2006 15:04:05")
+	timeExpired := helper.GetCurrentTime().Add(time.Minute * 10).Format("02/January/2006 15:04:05")
 
 	email := entity.Email{
 		Title:    fmt.Sprintf("Request Reset Password"),
