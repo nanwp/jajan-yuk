@@ -16,6 +16,29 @@ type repository struct {
 	redis *redis.Pool
 }
 
+func (r repository) DeleteTokenFromRedis(key string) error {
+	conn := r.redis.Get()
+	defer conn.Close()
+
+	_, err := conn.Do("DEL", key)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r repository) GetUserByEmail(email string) (response entity.User, err error) {
+	db := r.db.Model(&User{}).Where("email = ?", email)
+	result := User{}
+
+	if err := db.First(&result).Error; err != nil {
+		return response, err
+	}
+
+	return result.ToEntity(), nil
+}
+
 func (r repository) GetUserByID(id string) (response entity.User, err error) {
 	db := r.db.Model(&User{}).Where("id = ?", id)
 
@@ -28,14 +51,12 @@ func (r repository) GetUserByID(id string) (response entity.User, err error) {
 	return result.ToEntity(), nil
 }
 
-func (r repository) ActivateUser(user entity.User) error {
+func (r repository) UpdateUser(user entity.User) error {
 	db := r.db.Model(&User{}).Where("id = ?", user.ID)
 
 	value := User{}
 	value.FromEntity(user)
 	value.UpdatedAt = time.Now()
-	value.ActivatedAt.Valid = true
-	value.ActivatedAt.Time = time.Now()
 	value.UpdatedBy = user.ID
 
 	if err := db.Updates(&value).Error; err != nil {
@@ -65,7 +86,7 @@ func (r repository) GetTokenFromRedis(key string) (value string, err error) {
 
 	value, err = redis.String(conn.Do("GET", key))
 	if err != nil {
-		return value, err
+		return value, entity.ErrorTokenExpired
 	}
 
 	return

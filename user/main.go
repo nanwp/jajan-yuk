@@ -26,5 +26,8 @@ func main() {
 	router, _ := middleware.InitRouter(cfg, db)
 
 	log.Printf("starting server at %v on port %v", time.Now().Format("2006-01-02 15:04:05"), cfg.HttpPort)
-	http.ListenAndServe(":"+cfg.HttpPort, router)
+	err := http.ListenAndServe(":"+cfg.HttpPort, router)
+	if err != nil {
+		return
+	}
 }

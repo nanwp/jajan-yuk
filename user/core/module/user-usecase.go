@@ -17,12 +17,77 @@ import (
 type UserUsecase interface {
 	Register(ctx context.Context, user entity.User) (response entity.User, err error)
 	ActivateAccount(ctx context.Context, params entity.ActivateAccount) (response entity.User, err error)
+	RequestResetPassword(ctx context.Context, params entity.RequestResetPassword) error
+	ResetPassword(params entity.ResetPassword) (response entity.User, err error)
 }
 
 type userUsecase struct {
 	cfg            config.Config
 	userRepo       repository.UserRepository
 	emailPublisher publisher.EmailPublisher
+}
+
+func (u userUsecase) ResetPassword(params entity.ResetPassword) (response entity.User, err error) {
+	if err := params.Validate(); err != nil {
+		return response, err
+	}
+
+	id, err := u.userRepo.GetTokenFromRedis(params.Token)
+	if err != nil {
+		return response, err
+	}
+
+	user, err := u.userRepo.GetUserByID(id)
+	if err != nil {
+		return response, err
+	}
+
+	password, _ := helper.GeneratePasswordString(params.NewPassword)
+
+	user.Password = password
+
+	if err := u.userRepo.UpdateUser(user); err != nil {
+		return response, err
+	}
+
+	if err := u.userRepo.DeleteTokenFromRedis(params.Token); err != nil {
+		return response, err
+	}
+
+	response = user
+
+	response.Password = ""
+	return
+}
+
+func (u userUsecase) RequestResetPassword(ctx context.Context, params entity.RequestResetPassword) error {
+	user, err := u.userRepo.GetUserByEmail(params.Email)
+	if err != nil {
+		return err
+	}
+
+	token := helper.RandomSerialString(32)
+
+	if err := u.userRepo.StoredTokenToRedis(token, user.ID, 10); err != nil {
+		return err
+	}
+
+	timeNow := time.Now().Format("02/January/2006 15:04:05")
+	timeExpired := time.Now().Add(time.Minute * 10).Format("02/January/2006 15:04:05")
+
+	email := entity.Email{
+		Title:    fmt.Sprintf("Request Reset Password"),
+		Receiver: user.Email,
+		Subject:  fmt.Sprintf("Request Reset Password"),
+		Body:     helper.ResetPassword(user.Name, fmt.Sprintf("%s/reset-password?token=%s", u.cfg.WebURL, token), timeNow, timeExpired),
+	}
+
+	err = u.emailPublisher.SendEmail(ctx, email)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (u userUsecase) ActivateAccount(ctx context.Context, params entity.ActivateAccount) (response entity.User, err error) {
@@ -32,7 +97,6 @@ func (u userUsecase) ActivateAccount(ctx context.Context, params entity.Activate
 
 	id, err := u.userRepo.GetTokenFromRedis(params.Token)
 	if err != nil {
-		log.Println(err.Error())
 		return response, fmt.Errorf("invalid or expired token")
 	}
 
@@ -48,7 +112,7 @@ func (u userUsecase) ActivateAccount(ctx context.Context, params entity.Activate
 	user.ActivatedAt.Valid = true
 	user.ActivatedAt.Time = time.Now()
 
-	err = u.userRepo.ActivateUser(user)
+	err = u.userRepo.UpdateUser(user)
 	if err != nil {
 		return response, err
 	}

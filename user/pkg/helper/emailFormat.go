@@ -45,3 +45,27 @@ func SuccesActivateEmail(name string) string {
 
 	return body
 }
+
+func ResetPassword(name, url, tanggal, expire string) string {
+	body := fmt.Sprintf(`
+	<!DOCTYPE html>
+	<html>
+			<head>
+				<title>Jajan Yuk - Reset Password</title>
+			</head>
+			<body>
+				<h2>Request Reset Password - Jajan Yuk Apps</h2>
+				<p>Hi, %s</p>
+				<p>Permintaan Reset Password Telah anda lakukan pada <b>%s</b></p>
+				<p>Klik link dibawah ini sebelum expired pada <b>%s</b></p>
+				</br>
+				<p><a href="%s">Klik disini</a></p>
+				</br>
+				<p>Terima kasih,</p>
+				<p>Jajan Yuk Team</p>
+			</body>
+		</html>
+	`, name, tanggal, expire, url)
+
+	return body
+}

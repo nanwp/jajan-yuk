@@ -13,6 +13,8 @@ import (
 type HttpHandler interface {
 	Register(w http.ResponseWriter, r *http.Request)
 	Verification(w http.ResponseWriter, r *http.Request)
+	RequestResetPassword(w http.ResponseWriter, r *http.Request)
+	ResetPassword(w http.ResponseWriter, r *http.Request)
 }
 
 type httpHandler struct {
@@ -120,11 +122,7 @@ func (h httpHandler) Verification(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	type token struct {
-		Token string `json:"token"`
-	}
-
-	tkn := token{}
+	tkn := entity.ActivateAccount{}
 	err = json.Unmarshal(bodyBytes, &tkn)
 	if err != nil {
 		response.Message = err.Error()
@@ -142,10 +140,7 @@ func (h httpHandler) Verification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.userUsecase.ActivateAccount(ctx, entity.ActivateAccount{
-		Token: tkn.Token,
-	})
-
+	user, err := h.userUsecase.ActivateAccount(ctx, tkn)
 	if err != nil {
 		response.Message = err.Error()
 		response.Success = false
@@ -159,5 +154,114 @@ func (h httpHandler) Verification(w http.ResponseWriter, r *http.Request) {
 	response.Message = "success activate account"
 	json.NewEncoder(w).Encode(response)
 	w.WriteHeader(http.StatusOK)
+}
 
+func (h httpHandler) RequestResetPassword(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var bodyBytes []byte
+	var err error
+	var response response
+	ctx := r.Context()
+
+	if r.Body != nil {
+		bodyBytes, err = ioutil.ReadAll(r.Body)
+		if err != nil {
+			if err != nil {
+				response.Message = err.Error()
+				response.Success = false
+				w.WriteHeader(http.StatusBadRequest)
+				json.NewEncoder(w).Encode(response)
+				return
+			}
+
+			defer r.Body.Close()
+		}
+	}
+
+	params := entity.RequestResetPassword{}
+	err = json.Unmarshal(bodyBytes, &params)
+	if err != nil {
+		response.Message = err.Error()
+		response.Success = false
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	if r.Method != http.MethodPost {
+		response.Message = "Method not Allow"
+		response.Success = false
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	err = h.userUsecase.RequestResetPassword(ctx, params)
+	if err != nil {
+		response.Message = err.Error()
+		response.Success = false
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	response.Success = true
+	response.Message = "success request reset password, please check email"
+	json.NewEncoder(w).Encode(response)
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h httpHandler) ResetPassword(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var bodyBytes []byte
+	var err error
+	var response response
+
+	if r.Body != nil {
+		bodyBytes, err = ioutil.ReadAll(r.Body)
+		if err != nil {
+			if err != nil {
+				response.Message = err.Error()
+				response.Success = false
+				w.WriteHeader(http.StatusBadRequest)
+				json.NewEncoder(w).Encode(response)
+				return
+			}
+
+			defer r.Body.Close()
+		}
+	}
+
+	params := entity.ResetPassword{}
+	err = json.Unmarshal(bodyBytes, &params)
+	if err != nil {
+		response.Message = err.Error()
+		response.Success = false
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	if r.Method != http.MethodPost {
+		response.Message = "Method not Allow"
+		response.Success = false
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	data, err := h.userUsecase.ResetPassword(params)
+	if err != nil {
+		response.Message = err.Error()
+		response.Success = false
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	response.Data = data
+	response.Success = true
+	response.Message = "success reset password, you can login with new password"
+	json.NewEncoder(w).Encode(response)
+	w.WriteHeader(http.StatusOK)
 }

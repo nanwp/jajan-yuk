@@ -29,6 +29,8 @@ func InitRouter(cfg config.Config, db *gorm.DB) (http.Handler, conn.CacheService
 	router := mux.NewRouter()
 	router.HandleFunc("/api/v1/register/{role}", httpHandler.Register).Methods(http.MethodPost)
 	router.HandleFunc("/api/v1/verification", httpHandler.Verification).Methods(http.MethodPost)
+	router.HandleFunc("/api/v1/request-reset-password", httpHandler.RequestResetPassword).Methods(http.MethodPost)
+	router.HandleFunc("/api/v1/reset-password", httpHandler.ResetPassword).Methods(http.MethodPost)
 
 	handler := c.Handler(router)
 
