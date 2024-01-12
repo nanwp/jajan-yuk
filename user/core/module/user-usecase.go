@@ -16,7 +16,7 @@ import (
 
 type UserUsecase interface {
 	Register(ctx context.Context, user entity.User) (response entity.User, err error)
-	ActivateAccount(params entity.ActivateAccount) (response entity.User, err error)
+	ActivateAccount(ctx context.Context, params entity.ActivateAccount) (response entity.User, err error)
 }
 
 type userUsecase struct {
@@ -25,7 +25,7 @@ type userUsecase struct {
 	emailPublisher publisher.EmailPublisher
 }
 
-func (u userUsecase) ActivateAccount(params entity.ActivateAccount) (response entity.User, err error) {
+func (u userUsecase) ActivateAccount(ctx context.Context, params entity.ActivateAccount) (response entity.User, err error) {
 	if params.Token == "" {
 		return response, fmt.Errorf("token required")
 	}
@@ -51,6 +51,17 @@ func (u userUsecase) ActivateAccount(params entity.ActivateAccount) (response en
 	err = u.userRepo.ActivateUser(user)
 	if err != nil {
 		return response, err
+	}
+
+	email := entity.Email{
+		Title:    fmt.Sprintf("Successful activate account"),
+		Receiver: user.Email,
+		Subject:  fmt.Sprintf("Activate account"),
+		Body:     helper.SuccesActivateEmail(user.Name),
+	}
+
+	if err := u.emailPublisher.SendEmail(ctx, email); err != nil {
+		log.Printf("error at %v", err)
 	}
 
 	response = user

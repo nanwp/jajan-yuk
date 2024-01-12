@@ -12,7 +12,7 @@ services:
       - DB_HOST=localhost
       - DB_USERNAME=postgres
       - DB_PASSWORD=password
-      - BASE_URL=8081
+      - WEB_URL=https://localhot:3000
     volumes:
       - ./config/google-cloud-config.json:/app/google-cloud-config.json
     depends_on:

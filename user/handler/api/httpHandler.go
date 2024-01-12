@@ -103,6 +103,7 @@ func (h httpHandler) Verification(w http.ResponseWriter, r *http.Request) {
 	var bodyBytes []byte
 	var err error
 	var response response
+	ctx := r.Context()
 
 	if r.Body != nil {
 		bodyBytes, err = ioutil.ReadAll(r.Body)
@@ -141,7 +142,7 @@ func (h httpHandler) Verification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.userUsecase.ActivateAccount(entity.ActivateAccount{
+	user, err := h.userUsecase.ActivateAccount(ctx, entity.ActivateAccount{
 		Token: tkn.Token,
 	})
 
