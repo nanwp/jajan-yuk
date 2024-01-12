@@ -22,6 +22,7 @@ services:
     build: ./email
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/app/google-cloud-config.json
+      - SMTP_PASS=password
     volumes:
       - ./config/google-cloud-config.json:/app/google-cloud-config.json
 
