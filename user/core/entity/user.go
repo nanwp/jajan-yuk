@@ -8,6 +8,13 @@ import (
 	"time"
 )
 
+type RoleID string
+
+var (
+	UserID     RoleID = "3e76048d-f9f2-4974-845f-60137f9e2f4b"
+	PedagangID RoleID = "ea8e1e87-ae6e-44b1-9854-4dbb0c70a330"
+)
+
 var (
 	ErrorUsernameUsed = errors.New("username already exist")
 	ErrorEmailUsed    = errors.New("email already exist")
@@ -89,6 +96,6 @@ func (u *User) Validate() error {
 }
 
 type Role struct {
-	ID   string `json:"id,omitempty"`
+	ID   string `json:"id"`
 	Name string `json:"name,omitempty"`
 }

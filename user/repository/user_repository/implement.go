@@ -16,6 +16,22 @@ type repository struct {
 	redis *redis.Pool
 }
 
+func (r repository) AddPedagangInfo(field entity.Pedagang) (response entity.Pedagang, err error) {
+	db := r.db.Model(&Pedagang{})
+
+	record := Pedagang{}
+	record.FromEntity(field)
+	record.CreatedBy = field.UserID
+	record.UpdatedBy = field.UserID
+
+	if err := db.Create(&record).Error; err != nil {
+		return
+	}
+
+	response = record.ToEntity()
+	return
+}
+
 func (r repository) DeleteTokenFromRedis(key string) error {
 	conn := r.redis.Get()
 	defer conn.Close()
