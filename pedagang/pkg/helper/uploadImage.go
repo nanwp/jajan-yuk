@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"fmt"
 	"io"
 	"mime/multipart"
 	"os"
@@ -29,6 +30,7 @@ func UploadImage(image multipart.File, handler *multipart.FileHeader) (string, e
 		return "", err
 	}
 
-	fullPath, err := filepath.Abs(dir + "/" + fileName)
+	fullPath := fmt.Sprintf("%s/%s", dir, fileName)
+
 	return fullPath, nil
 }

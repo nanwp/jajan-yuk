@@ -17,6 +17,7 @@ services:
       - AUTH_URL=https://auth.jajan-yuk.pegelinux.my.id
     volumes:
       - ./config/google-cloud-config.json:/app/google-cloud-config.json
+      - ./images:/app/images
     depends_on:
       - redis
 

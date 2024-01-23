@@ -13,6 +13,7 @@ type Config struct {
 	DBMaxIdleConns    int    `envconfig:"DB_MAX_IDLE_CONNS" default:"5"`
 	DBMaxOpenConns    int    `envconfig:"DB_MAX_OPEN_CONNS" default:"10"`
 	DBConnMaxLifeTime int    `envconfig:"DB_CONN_MAX_LIFETIME" default:"10"`
+	BASE_URL          string `envconfig:"BASE_URL" default:"http://localhost:8082"`
 
 	ProjectID string `envconfig:"PROJECT_ID" default:"jajan-yuk-409318"`
 	TopicID   string `envconfig:"TOPIC_ID" default:"email"`

@@ -21,7 +21,7 @@ type Pedagang struct {
 	Latitude     float64        `gorm:"column:latitude;type:double precision;default:null" json:"latitude"`
 	Longitude    float64        `gorm:"column:longitude;type:double precision;default:null" json:"longitude"`
 	Image        string         `gorm:"column:image;type:varchar(255);default:null" json:"image"`
-	IsActive     bool           `gorm:"column:is_active;type:boolean;default:true" json:"is_active"`
+	IsActive     bool           `gorm:"column:is_active;type:boolean" json:"is_active"`
 	Distance     float64        `gorm:"-" json:"distance"`
 }
 

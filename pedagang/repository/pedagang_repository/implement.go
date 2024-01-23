@@ -2,6 +2,7 @@ package pedagang_repository
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/nanwp/jajan-yuk/pedagang/config"
 	"github.com/nanwp/jajan-yuk/pedagang/core/entity"
@@ -82,18 +83,41 @@ func (r *repository) CreatePedagang(pedagang entity.Pedagang) (entity.Pedagang, 
 	return pedagangModel.ToEntity(), nil
 }
 
-func (r *repository) UpdateLocation(params entity.UpdateLocationRequest) error {
+func (r *repository) UpdatePedagang(params entity.Pedagang) error {
 	db := r.db.Model(&Pedagang{}).Where("user_id = ?", params.UserID)
 	pedagang := Pedagang{}
+	pedagang.FromEntity(params)
+	pedagang.UpdatedBy = params.UserID
+	log.Println(pedagang)
 
-	if err := db.First(&pedagang).Error; err != nil {
+	if err := db.Updates(&pedagang).Error; err != nil {
 		return err
 	}
 
-	pedagang.Latitude = params.Latitude
-	pedagang.Longitude = params.Longitude
+	return nil
+}
 
-	if err := db.Save(&pedagang).Error; err != nil {
+func (r *repository) GetPedagangByUserID(userID string) (entity.Pedagang, error) {
+	db := r.db.Model(&Pedagang{}).Where("user_id = ?", userID)
+	var pedagang Pedagang
+
+	if err := db.First(&pedagang).Error; err != nil {
+		return entity.Pedagang{}, err
+	}
+
+	return pedagang.ToEntity(), nil
+}
+
+func (r *repository) SwitchActiveStatus(id string, status bool) error {
+	db := r.db.Model(&Pedagang{}).Where("id = ?", id)
+	pedagang := Pedagang{}
+	pedagang.IsActive = status
+
+	updatedFields := map[string]interface{}{
+		"is_active": status,
+	}
+
+	if err := db.Updates(updatedFields).Error; err != nil {
 		return err
 	}
 

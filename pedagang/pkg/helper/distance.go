@@ -1,6 +1,10 @@
 package helper
 
-import "math"
+import (
+	"fmt"
+	"math"
+	"strconv"
+)
 
 func Distance(lat1 float64, lng1 float64, lat2 float64, lng2 float64, unit ...string) float64 {
 	radlat1 := float64(math.Pi * lat1 / 180)
@@ -30,4 +34,9 @@ func Distance(lat1 float64, lng1 float64, lat2 float64, lng2 float64, unit ...st
 	}
 
 	return dist
+}
+
+func FormatFloat(value float64) float64 {
+	formattedValue, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", value), 64)
+	return formattedValue
 }

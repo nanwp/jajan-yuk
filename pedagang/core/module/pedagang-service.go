@@ -18,6 +18,7 @@ type PedagangService interface {
 	CreatePedagang(pedagang entity.Pedagang) (entity.Pedagang, error)
 	UpdateLocation(params entity.UpdateLocationRequest) error
 	SaveImage(image multipart.File, handler *multipart.FileHeader) (string, error)
+	SwitchActiveStatus(userID string) error
 }
 
 type pedagangService struct {
@@ -90,7 +91,10 @@ func (s *pedagangService) GetAllPedagangNearby(params entity.GetAllPedagangNearb
 	}
 
 	for i, v := range response {
-		response[i].Distance = helper.Distance(params.Latitude, params.Longitude, v.Latitude, v.Longitude, "m")
+		if params.Latitude != 0 && params.Longitude != 0 {
+			response[i].Distance = helper.Distance(params.Latitude, params.Longitude, v.Latitude, v.Longitude, "m")
+			response[i].Distance = helper.FormatFloat(response[i].Distance)
+		}
 		if response[i].Image != "" {
 			response[i].Image = fmt.Sprintf("%s/%s", s.cfg.BaseURL, v.Image)
 		}
@@ -109,6 +113,8 @@ func (s *pedagangService) CreatePedagang(pedagang entity.Pedagang) (entity.Pedag
 		pedagang.Image = "/images/default.png"
 	}
 
+	pedagang.IsActive = false
+
 	response, err := s.pedagangRepo.CreatePedagang(pedagang)
 	if err != nil {
 		errMsg := fmt.Errorf("[PedagangService.CreatePedagang] error when create pedagang: %w", err)
@@ -124,9 +130,39 @@ func (s *pedagangService) UpdateLocation(params entity.UpdateLocationRequest) er
 		return errMsg
 	}
 
-	err := s.pedagangRepo.UpdateLocation(params)
+	pedagang, err := s.pedagangRepo.GetPedagangByUserID(params.UserID)
+	if err != nil {
+		errMsg := fmt.Errorf("[PedagangService.UpdateLocation] error when get pedagang by user id: %w", err)
+		return errMsg
+	}
+
+	pedagang.Latitude = params.Latitude
+	pedagang.Longitude = params.Longitude
+
+	err = s.pedagangRepo.UpdatePedagang(pedagang)
 	if err != nil {
 		errMsg := fmt.Errorf("[PedagangService.UpdateLocation] error when update location: %w", err)
+		return errMsg
+	}
+
+	return nil
+}
+
+func (s *pedagangService) SwitchActiveStatus(userID string) error {
+	if userID == "" {
+		errMsg := errors.New("user id is required")
+		return errMsg
+	}
+
+	pedagang, err := s.pedagangRepo.GetPedagangByUserID(userID)
+	if err != nil {
+		errMsg := fmt.Errorf("[PedagangService.SwitchActiveStatus] error when get pedagang by user id: %w", err)
+		return errMsg
+	}
+
+	err = s.pedagangRepo.SwitchActiveStatus(pedagang.ID, !pedagang.IsActive)
+	if err != nil {
+		errMsg := fmt.Errorf("[PedagangService.SwitchActiveStatus] error when switch active status: %w", err)
 		return errMsg
 	}
 

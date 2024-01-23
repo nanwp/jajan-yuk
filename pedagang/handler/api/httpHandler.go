@@ -16,6 +16,7 @@ type HTTPHandler interface {
 	GetAllPedagangNearby(w http.ResponseWriter, r *http.Request)
 	CreatePedagang(w http.ResponseWriter, r *http.Request)
 	UpdateLocation(w http.ResponseWriter, r *http.Request)
+	SwitchStatus(w http.ResponseWriter, r *http.Request)
 }
 
 type response struct {
@@ -41,6 +42,57 @@ func NewHTTPHandler(pedagangService module.PedagangService) HTTPHandler {
 	return &httpHandler{
 		pedagangService: pedagangService,
 	}
+}
+
+func (h *httpHandler) SwitchStatus(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var err error
+	var response response
+	var bodyBytes []byte
+
+	//auth
+	user, err := auth.ValidateCurrentUser(w, r)
+	if err != nil {
+		response.Message = err.Error()
+		bodyBytes, err = response.MarshalJSON()
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write(bodyBytes)
+		return
+	}
+
+	//get body
+
+	//validate
+
+	//switch status
+	err = h.pedagangService.SwitchActiveStatus(user.Data.User.ID)
+	if err != nil {
+		response.Message = err.Error()
+		bodyBytes, err = response.MarshalJSON()
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write(bodyBytes)
+		return
+	}
+
+	response.Success = true
+	response.Message = "Success switch status"
+	bodyBytes, err = response.MarshalJSON()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(bodyBytes)
+	return
 }
 
 func (h *httpHandler) GetPedagangByID(w http.ResponseWriter, r *http.Request) {
@@ -118,18 +170,10 @@ func (h *httpHandler) GetAllPedagangNearby(w http.ResponseWriter, r *http.Reques
 
 	//get body
 	var params entity.GetAllPedagangNearbyRequest
-	err = json.NewDecoder(r.Body).Decode(&params)
-	if err != nil {
-		response.Message = err.Error()
-		bodyBytes, err = response.MarshalJSON()
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write(bodyBytes)
-		return
-	}
+	params.Keyword = r.URL.Query().Get("keyword")
+	params.Latitude = helper.StringToFloat64(r.URL.Query().Get("latitude"))
+	params.Longitude = helper.StringToFloat64(r.URL.Query().Get("longitude"))
+	params.MaxDistance = helper.StringToFloat64(r.URL.Query().Get("max_distance"))
 
 	//validate
 

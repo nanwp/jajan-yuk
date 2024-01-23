@@ -6,5 +6,7 @@ type PedagangRepository interface {
 	GetPedagangByID(id string) (entity.Pedagang, error)
 	GetAllPedagangNearby(params entity.GetAllPedagangNearbyRequest) ([]entity.Pedagang, error)
 	CreatePedagang(pedagang entity.Pedagang) (entity.Pedagang, error)
-	UpdateLocation(params entity.UpdateLocationRequest) error
+	UpdatePedagang(params entity.Pedagang) error
+	GetPedagangByUserID(userID string) (entity.Pedagang, error)
+	SwitchActiveStatus(id string, status bool) error
 }
