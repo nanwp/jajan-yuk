@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 
+	"github.com/gorilla/mux"
 	"github.com/nanwp/jajan-yuk/pedagang/core/entity"
 	"github.com/nanwp/jajan-yuk/pedagang/core/module"
 	"github.com/nanwp/jajan-yuk/pedagang/pkg/helper"
@@ -17,6 +19,7 @@ type HTTPHandler interface {
 	CreatePedagang(w http.ResponseWriter, r *http.Request)
 	UpdateLocation(w http.ResponseWriter, r *http.Request)
 	SwitchStatus(w http.ResponseWriter, r *http.Request)
+	GetImage(w http.ResponseWriter, r *http.Request)
 }
 
 type response struct {
@@ -42,6 +45,20 @@ func NewHTTPHandler(pedagangService module.PedagangService) HTTPHandler {
 	return &httpHandler{
 		pedagangService: pedagangService,
 	}
+}
+
+func (h *httpHandler) GetImage(w http.ResponseWriter, r *http.Request) {
+	imageName := mux.Vars(r)["image_name"]
+
+	_, err := os.Open("./images/" + imageName)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	http.ServeFile(w, r, "./images/"+imageName)
+	return
 }
 
 func (h *httpHandler) SwitchStatus(w http.ResponseWriter, r *http.Request) {

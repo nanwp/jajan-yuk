@@ -34,3 +34,21 @@ func UploadImage(image multipart.File, handler *multipart.FileHeader) (string, e
 
 	return fullPath, nil
 }
+
+func DeleteImage(path string) error {
+	err := os.Remove(path)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func GetImage(path string) (*os.File, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+
+	return file, nil
+}
