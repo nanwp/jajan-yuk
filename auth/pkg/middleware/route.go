@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"net/http"
+
 	"github.com/gorilla/mux"
 	"github.com/nanwp/jajan-yuk/auth/config"
 	"github.com/nanwp/jajan-yuk/auth/core/module"
@@ -9,7 +11,6 @@ import (
 	"github.com/nanwp/jajan-yuk/auth/repository/auth_repository"
 	"github.com/rs/cors"
 	"gorm.io/gorm"
-	"net/http"
 )
 
 func InitRouter(cfg config.Config, db *gorm.DB) (http.Handler, conn.CacheService) {
@@ -26,9 +27,10 @@ func InitRouter(cfg config.Config, db *gorm.DB) (http.Handler, conn.CacheService
 	router := mux.NewRouter()
 	apiHttp := api.NewHttpHandler(authUsecase)
 
-	router.HandleFunc("/api/v1/login", apiHttp.Login)
-	router.HandleFunc("/api/v1/current-user", apiHttp.GetCurrentUser)
-	router.HandleFunc("/api/v1/refresh", apiHttp.RefreshToken)
+	router.HandleFunc("/api/v1/login", apiHttp.Login).Methods("POST")
+	router.HandleFunc("/api/v1/current-user", apiHttp.GetCurrentUser).Methods("GET")
+	router.HandleFunc("/api/v1/refresh", apiHttp.RefreshToken).Methods("POST")
+	router.HandleFunc("/api/v1/validate-secret-key", apiHttp.ValidateSecretKey).Methods("POST")
 
 	handler := c.Handler(router)
 

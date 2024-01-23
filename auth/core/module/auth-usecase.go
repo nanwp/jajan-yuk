@@ -1,10 +1,11 @@
 package module
 
 import (
+	"time"
+
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/nanwp/jajan-yuk/auth/core/entity"
 	"github.com/nanwp/jajan-yuk/auth/core/repository"
-	"time"
 )
 
 type AuthUsecase interface {
@@ -12,6 +13,7 @@ type AuthUsecase interface {
 	RefreshToken(params entity.RefreshTokenRequest) (response entity.LoginResponse, err error)
 	GetCurrentUser(token string) (response entity.GetCurrentUserResponse, err error)
 	Logout(token string) (err error)
+	ValidateSecretKey(secretKey string) (response entity.SecretKey, err error)
 }
 
 type authUsecase struct {
@@ -20,6 +22,15 @@ type authUsecase struct {
 
 func NewAuthUsecase(authRepo repository.AuthRepository) AuthUsecase {
 	return &authUsecase{authRepo}
+}
+
+func (a *authUsecase) ValidateSecretKey(secretKey string) (response entity.SecretKey, err error) {
+	response, err = a.authRepo.ValidateSecretKey(secretKey)
+	if err != nil {
+		return response, err
+	}
+
+	return response, nil
 }
 
 func (a *authUsecase) Login(params entity.LoginRequest) (response entity.LoginResponse, err error) {

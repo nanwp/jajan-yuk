@@ -2,17 +2,19 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/nanwp/jajan-yuk/auth/core/entity"
-	"github.com/nanwp/jajan-yuk/auth/core/module"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/nanwp/jajan-yuk/auth/core/entity"
+	"github.com/nanwp/jajan-yuk/auth/core/module"
 )
 
 type HttpHandler interface {
 	Login(w http.ResponseWriter, r *http.Request)
 	GetCurrentUser(w http.ResponseWriter, r *http.Request)
 	RefreshToken(w http.ResponseWriter, r *http.Request)
+	ValidateSecretKey(w http.ResponseWriter, r *http.Request)
 }
 
 type httpHandler struct {
@@ -29,6 +31,43 @@ type response struct {
 	Success bool        `json:"success"`
 	Message string      `json:"message,omitempty"`
 	Data    interface{} `json:"data,omitempty"`
+}
+
+func (h *httpHandler) ValidateSecretKey(w http.ResponseWriter, r *http.Request) {
+	var response response
+	var err error
+	w.Header().Set("Content-Type", "application/json")
+
+	if r.Method != "POST" {
+		response.Message = "Method not Allow"
+		response.Success = false
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	secretKey := r.Header.Get("Secret-Key")
+	if secretKey == "" {
+		response.Message = "Secret Key Required"
+		response.Success = false
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	response.Data, err = h.authUsecase.ValidateSecretKey(secretKey)
+	if err != nil {
+		response.Success = false
+		response.Message = err.Error()
+		response.Data = nil
+		w.WriteHeader(http.StatusBadRequest)
+	} else {
+		response.Success = true
+		response.Message = "success"
+		w.WriteHeader(http.StatusOK)
+	}
+
+	json.NewEncoder(w).Encode(response)
 }
 
 func (h *httpHandler) Login(w http.ResponseWriter, r *http.Request) {

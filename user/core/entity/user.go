@@ -66,6 +66,7 @@ type User struct {
 	Image          string       `json:"image"`
 	Role           Role         `json:"role"`
 	ActivatedAt    sql.NullTime `json:"activated_at"`
+	Pedagang       Pedagang     `json:"pedagang,omitempty"`
 }
 
 func (u *User) Validate() error {

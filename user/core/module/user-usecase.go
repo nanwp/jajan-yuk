@@ -25,6 +25,7 @@ type userUsecase struct {
 	cfg            config.Config
 	userRepo       repository.UserRepository
 	emailPublisher publisher.EmailPublisher
+	pedagangRepo   repository.PedagangRepository
 }
 
 func (u userUsecase) ResetPassword(params entity.ResetPassword) (response entity.User, err error) {
@@ -175,6 +176,16 @@ func (u userUsecase) Register(ctx context.Context, user entity.User) (response e
 		return response, err
 	}
 
+	if role.Name == "PEDAGANG" {
+		pedagang := user.Pedagang
+		pedagang.UserID = response.ID
+
+		_, err = u.pedagangRepo.CreatePedagang(pedagang)
+		if err != nil {
+			return response, err
+		}
+	}
+
 	token := helper.RandomSerialString(32)
 	if err := u.userRepo.StoredTokenToRedis(token, response.ID, 30); err != nil {
 		return response, err
@@ -201,10 +212,11 @@ func (u userUsecase) Register(ctx context.Context, user entity.User) (response e
 	return response, nil
 }
 
-func NewUserRepository(cfg config.Config, userRepo repository.UserRepository, emailPublisher publisher.EmailPublisher) UserUsecase {
+func NewUserRepository(cfg config.Config, userRepo repository.UserRepository, emailPublisher publisher.EmailPublisher, pedagangRepo repository.PedagangRepository) UserUsecase {
 	return userUsecase{
 		cfg:            cfg,
 		userRepo:       userRepo,
 		emailPublisher: emailPublisher,
+		pedagangRepo:   pedagangRepo,
 	}
 }

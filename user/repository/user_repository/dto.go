@@ -74,35 +74,3 @@ func (r *Role) ToEntity() entity.Role {
 		Name: r.Name,
 	}
 }
-
-type Pedagang struct {
-	ID        string         `gorm:"column:id;primary_key;type:uuid;default:null" json:"id"`
-	UserID    string         `gorm:"column:user_id" json:"user_id"`
-	Name      string         `gorm:"column:name;type:varchar(255)" json:"name"`
-	Image     string         `gorm:"column:image" json:"image"`
-	Telephone string         `gorm:"column:telephone" json:"telephone"`
-	CreatedAt time.Time      `gorm:"column:created_at" json:"created_at"`
-	UpdatedAt time.Time      `gorm:"column:updated_at" json:"updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`
-	CreatedBy string         `gorm:"column:created_by;type:varchar(255)" json:"created_by"`
-	UpdatedBy string         `gorm:"column:updated_by;type:varchar(255)" json:"updated_by"`
-	DeletedBy string         `gorm:"column:deleted_by;type:varchar(255)" json:"deleted_by"`
-}
-
-func (p *Pedagang) ToEntity() entity.Pedagang {
-	return entity.Pedagang{
-		ID:        p.ID,
-		UserID:    p.UserID,
-		Name:      p.Name,
-		Image:     p.Image,
-		Telephone: p.Telephone,
-	}
-}
-
-func (p *Pedagang) FromEntity(pedagang entity.Pedagang) {
-	p.ID = pedagang.ID
-	p.UserID = pedagang.UserID
-	p.Name = pedagang.Name
-	p.Image = pedagang.Image
-	p.Telephone = pedagang.Telephone
-}

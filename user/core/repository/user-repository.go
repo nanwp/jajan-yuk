@@ -13,5 +13,4 @@ type UserRepository interface {
 	GetTokenFromRedis(key string) (value string, err error)
 	DeleteTokenFromRedis(key string) error
 	GetRoleByID(id string) (role entity.Role, err error)
-	AddPedagangInfo(field entity.Pedagang) (response entity.Pedagang, err error)
 }

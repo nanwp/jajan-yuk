@@ -24,6 +24,10 @@ type Config struct {
 	RedisPort     string `envconfig:"REDIS_PORT" default:"6379"`
 	RedisPassword string `envconfig:"REDIS_PASSWORD" default:""`
 	RedisMaxIdle  int    `envconfig:"REDIS_MX_IDLE" default:"10"`
+
+	PedagangURL string `envconfig:"PEDAGANG_URL" default:"http://localhost:8082"`
+
+	SecretKey string `envconfig:"SECRET_KEY" default:"hehe"`
 }
 
 func Get() Config {

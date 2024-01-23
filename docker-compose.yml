@@ -1,5 +1,25 @@
 version: '3.9'
 services:
+  pedagang:
+    build: ./pedagang
+    ports:
+      - "8482:8482"
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/google-cloud-config.json
+      - HTTP_PORT=8482
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - DB_HOST=localhost
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=password
+      - WEB_URL=https://localhot:3000
+      - TZ=Asia/Jakarta
+      - AUTH_URL=https://auth.jajan-yuk.pegelinux.my.id
+    volumes:
+      - ./config/google-cloud-config.json:/app/google-cloud-config.json
+    depends_on:
+      - redis
+
   user:
     build: ./user
     ports:
