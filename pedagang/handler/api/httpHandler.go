@@ -20,6 +20,7 @@ type HTTPHandler interface {
 	UpdateLocation(w http.ResponseWriter, r *http.Request)
 	SwitchStatus(w http.ResponseWriter, r *http.Request)
 	GetImage(w http.ResponseWriter, r *http.Request)
+	GetCurrent(w http.ResponseWriter, r *http.Request)
 }
 
 type response struct {
@@ -45,6 +46,57 @@ func NewHTTPHandler(pedagangService module.PedagangService) HTTPHandler {
 	return &httpHandler{
 		pedagangService: pedagangService,
 	}
+}
+
+func (h *httpHandler) GetCurrent(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var bodyBytes []byte
+	var err error
+	var response response
+
+	//auth
+	user, err := auth.ValidateCurrentUser(w, r)
+	if err != nil {
+		log.Printf("[httpHandler.GetCurrent] error when validate current user: %v\n", err)
+		response.Message = err.Error()
+		bodyBytes, err = response.MarshalJSON()
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write(bodyBytes)
+		return
+	}
+
+	//get pedagang by user id
+	pedagang, err := h.pedagangService.GetPedagangByUserID(user.Data.User.ID)
+	if err != nil {
+		log.Printf("[httpHandler.GetCurrent] error when get pedagang by user id: %v\n", err)
+		response.Message = err.Error()
+		bodyBytes, err = response.MarshalJSON()
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write(bodyBytes)
+		return
+	}
+
+	response.Success = true
+	response.Message = "Success get current pedagang"
+	response.Data = pedagang
+	bodyBytes, err = response.MarshalJSON()
+	if err != nil {
+		log.Printf("[httpHandler.GetCurrent] error when marshal json: %v\n", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(bodyBytes)
+	return
 }
 
 func (h *httpHandler) GetImage(w http.ResponseWriter, r *http.Request) {

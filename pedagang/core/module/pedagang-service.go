@@ -19,6 +19,7 @@ type PedagangService interface {
 	UpdateLocation(params entity.UpdateLocationRequest) error
 	SaveImage(image multipart.File, handler *multipart.FileHeader) (string, error)
 	SwitchActiveStatus(userID string) error
+	GetPedagangByUserID(userID string) (entity.Pedagang, error)
 }
 
 type pedagangService struct {
@@ -31,6 +32,27 @@ func NewPedagangService(cfg config.Config, pedagangRepo repository.PedagangRepos
 		cfg:          cfg,
 		pedagangRepo: pedagangRepo,
 	}
+}
+
+func (s *pedagangService) GetPedagangByUserID(userID string) (entity.Pedagang, error) {
+	if userID == "" {
+		errMsg := errors.New("user id is required")
+		return entity.Pedagang{}, errMsg
+	}
+
+	response, err := s.pedagangRepo.GetPedagangByUserID(userID)
+	if err != nil {
+		errMsg := fmt.Errorf("[PedagangService.GetPedagangByUserID] error when get pedagang by user id: %w", err)
+		return entity.Pedagang{}, errMsg
+	}
+
+	if response.Image != "" {
+		response.Image = fmt.Sprintf("%s/%s", s.cfg.BaseURL, response.Image)
+	} else {
+		response.Image = fmt.Sprintf("%s/%s", s.cfg.BaseURL, "/images/default.png")
+	}
+
+	return response, nil
 }
 
 func (s *pedagangService) SaveImage(image multipart.File, handler *multipart.FileHeader) (string, error) {

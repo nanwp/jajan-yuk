@@ -32,6 +32,7 @@ func InitRouter(cfg config.Config, db *gorm.DB) (http.Handler, conn.CacheService
 	router.HandleFunc("/api/v1/pedagang/location", httpHandler.UpdateLocation).Methods("PUT")
 	router.HandleFunc("/api/v1/pedagang/switch-status", httpHandler.SwitchStatus).Methods("PUT")
 	router.HandleFunc("/images/{image_name}", httpHandler.GetImage).Methods("GET")
+	router.HandleFunc("/api/v1/current-pedagang", httpHandler.GetCurrent).Methods("GET")
 
 	handler := c.Handler(router)
 
