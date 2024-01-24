@@ -120,6 +120,13 @@ func (s *pedagangService) GetAllPedagangNearby(params entity.GetAllPedagangNearb
 		if response[i].Image != "" {
 			response[i].Image = fmt.Sprintf("%s/%s", s.cfg.BaseURL, v.Image)
 		}
+
+		summary := entity.SummaryProductPedagang{
+			NameProduct: "Kentang Goreng, Cimol, Tahu Bulat",
+			Rating:      4.5,
+			Harga:       "Rp 1.000 - Rp 5.000",
+		}
+		response[i].SummaryProductPedagang = summary
 	}
 
 	return response, nil
