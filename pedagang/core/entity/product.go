@@ -1,7 +1,5 @@
 package entity
 
-import "fmt"
-
 type Product struct {
 	ID          int64     `json:"id"`
 	Name        string    `json:"name"`
@@ -12,41 +10,9 @@ type Product struct {
 	Variant     []Variant `json:"variant"`
 }
 
-func (p *Product) Validate() error {
-	if p.Name == "" {
-		return fmt.Errorf("product name is required")
-	}
-
-	if p.Description == "" {
-		return fmt.Errorf("product description is required")
-	}
-
-	if p.Image == "" {
-		return fmt.Errorf("product image is required")
-	}
-
-	if p.Price == 0 {
-		return fmt.Errorf("product price is required")
-	}
-
-	if p.Category.ID == 0 {
-		return fmt.Errorf("product category is required")
-	}
-
-	return nil
-}
-
 type Category struct {
 	ID   int64  `json:"id"`
 	Name string `json:"name"`
-}
-
-func (c *Category) Validate() error {
-	if c.Name == "" {
-		return fmt.Errorf("category name is required")
-	}
-
-	return nil
 }
 
 type Variant struct {

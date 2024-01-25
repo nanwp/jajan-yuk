@@ -11,3 +11,12 @@ func StringToFloat64(str string) float64 {
 
 	return float
 }
+
+func StringToInt64(str string) int64 {
+	integer, err := strconv.ParseInt(str, 10, 64)
+	if err != nil {
+		return 0
+	}
+
+	return integer
+}

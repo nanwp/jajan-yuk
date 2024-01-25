@@ -25,12 +25,14 @@ type PedagangService interface {
 type pedagangService struct {
 	cfg          config.Config
 	pedagangRepo repository.PedagangRepository
+	productRepo  repository.ProductRepository
 }
 
-func NewPedagangService(cfg config.Config, pedagangRepo repository.PedagangRepository) PedagangService {
+func NewPedagangService(cfg config.Config, pedagangRepo repository.PedagangRepository, productRepo repository.ProductRepository) PedagangService {
 	return &pedagangService{
 		cfg:          cfg,
 		pedagangRepo: pedagangRepo,
+		productRepo:  productRepo,
 	}
 }
 
@@ -96,6 +98,19 @@ func (s *pedagangService) GetPedagangByID(id string) (entity.Pedagang, error) {
 	if err != nil {
 		errMsg := fmt.Errorf("[PedagangService.GetPedagangByID] error when get pedagang by id: %w", err)
 		return entity.Pedagang{}, errMsg
+	}
+
+	product, err := s.productRepo.GetProductByUserID(response.UserID)
+	if err != nil {
+		errMsg := fmt.Errorf("[PedagangService.GetPedagangByID] error when get product by user id: %w", err)
+		return entity.Pedagang{}, errMsg
+	}
+
+	response.Products = product
+	if response.Image != "" {
+		response.Image = fmt.Sprintf("%s/%s", s.cfg.BaseURL, response.Image)
+	} else {
+		response.Image = fmt.Sprintf("%s/%s", s.cfg.BaseURL, "images/default.png")
 	}
 
 	return response, nil

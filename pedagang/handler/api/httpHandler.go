@@ -185,7 +185,7 @@ func (h *httpHandler) GetPedagangByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//get params url /:id
-	id := r.URL.Query().Get("id")
+	id := mux.Vars(r)["id"]
 
 	//validate
 
@@ -322,7 +322,6 @@ func (h *httpHandler) CreatePedagang(w http.ResponseWriter, r *http.Request) {
 	//upload image
 	//
 	file, handler, err := r.FormFile("image")
-	log.Println(file)
 	if err != nil {
 		if err != http.ErrMissingFile {
 			log.Println(err)

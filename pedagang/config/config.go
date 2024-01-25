@@ -26,8 +26,10 @@ type Config struct {
 	RedisPassword string `envconfig:"REDIS_PASSWORD" default:""`
 	RedisMaxIdle  int    `envconfig:"REDIS_MX_IDLE" default:"10"`
 
-	BaseURL  string `envconfig:"BASE_URL" default:"http://localhost:8082"`
-	AUTH_URL string `envconfig:"AUTH_URL" default:"http://localhost:8080"`
+	BaseURL    string `envconfig:"BASE_URL" default:"http://localhost:8082"`
+	AUTH_URL   string `envconfig:"AUTH_URL" default:"http://localhost:8080"`
+	ProductURL string `envconfig:"PRODUCT_URL" default:"http://localhost:8083"`
+	SecretKey  string `envconfig:"SECRET_KEY" default:"hehe"`
 }
 
 func Get() Config {

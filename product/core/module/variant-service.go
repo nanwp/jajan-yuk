@@ -11,6 +11,7 @@ type VariantService interface {
 	GetVariantByIDs(ids []int64) (records []entity.Variant, err error)
 	GetVariantByUserCreated(userID string) (records []entity.Variant, err error)
 	CreateVariant(variant entity.Variant, userID string) (record entity.Variant, err error)
+	GetVariantByID(id int64) (record entity.Variant, err error)
 }
 
 type variantService struct {
@@ -21,6 +22,29 @@ func NewVariantService(variantRepo repository.VariantRepo) VariantService {
 	return &variantService{
 		variantRepo: variantRepo,
 	}
+}
+
+func (s *variantService) GetVariantByID(id int64) (record entity.Variant, err error) {
+	record, err = s.variantRepo.GetVariantByID(id)
+	if err != nil {
+		errMsg := fmt.Errorf("[VariantService.GetVariantByID] error when get variant by id, err: %w", err)
+		return entity.Variant{}, errMsg
+	}
+
+	variantTypes, err := s.variantRepo.GetVariantTypeByVariantIDs([]int64{record.ID})
+	if err != nil {
+		errMsg := fmt.Errorf("[VariantService.GetVariantByID] error when get variant type by variant ids, err: %w", err)
+		return entity.Variant{}, errMsg
+	}
+
+	record.VariantTypes = variantTypes
+	record.CountVariantType = int64(len(variantTypes))
+
+	for _, variantType := range variantTypes {
+		record.TotalPrice += variantType.Price
+	}
+
+	return record, nil
 }
 
 func (s *variantService) CreateVariant(variant entity.Variant, userID string) (record entity.Variant, err error) {
@@ -69,6 +93,10 @@ func (s *variantService) GetVariantByUserCreated(userID string) (records []entit
 	for i, record := range records {
 		records[i].VariantTypes = mapVariantTypes[record.ID]
 		records[i].CountVariantType = int64(len(mapVariantTypes[record.ID]))
+
+		for _, variantType := range mapVariantTypes[record.ID] {
+			records[i].TotalPrice += variantType.Price
+		}
 	}
 
 	return records, nil
@@ -99,6 +127,11 @@ func (s *variantService) GetVariantByIDs(ids []int64) (records []entity.Variant,
 
 	for i, record := range records {
 		records[i].VariantTypes = mapVariantTypes[record.ID]
+		records[i].CountVariantType = int64(len(mapVariantTypes[record.ID]))
+
+		for _, variantType := range mapVariantTypes[record.ID] {
+			records[i].TotalPrice += variantType.Price
+		}
 	}
 
 	return records, nil

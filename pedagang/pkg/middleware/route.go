@@ -4,11 +4,13 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/nanwp/jajan-yuk/pedagang/client/product_client"
 	"github.com/nanwp/jajan-yuk/pedagang/config"
 	"github.com/nanwp/jajan-yuk/pedagang/core/module"
 	"github.com/nanwp/jajan-yuk/pedagang/handler/api"
 	"github.com/nanwp/jajan-yuk/pedagang/pkg/conn"
 	"github.com/nanwp/jajan-yuk/pedagang/repository/pedagang_repository"
+	"github.com/nanwp/jajan-yuk/pedagang/repository/product_repository"
 	"github.com/rs/cors"
 	"gorm.io/gorm"
 )
@@ -17,7 +19,11 @@ func InitRouter(cfg config.Config, db *gorm.DB) (http.Handler, conn.CacheService
 	coreRedis, _ := conn.InitRedis(cfg)
 
 	pedagangRepository := pedagang_repository.NewPedagangRepository(cfg, db)
-	pedagangService := module.NewPedagangService(cfg, pedagangRepository)
+
+	productClient := product_client.NewProductClient(cfg)
+	productRepo := product_repository.New(cfg, productClient)
+
+	pedagangService := module.NewPedagangService(cfg, pedagangRepository, productRepo)
 	httpHandler := api.NewHTTPHandler(pedagangService)
 
 	c := cors.New(cors.Options{

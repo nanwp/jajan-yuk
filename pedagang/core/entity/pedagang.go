@@ -10,7 +10,8 @@ type Pedagang struct {
 	Longitude              float64                `json:"longitude"`
 	IsActive               bool                   `json:"is_active"`
 	Distance               float64                `json:"distance"`
-	SummaryProductPedagang SummaryProductPedagang `json:"summary_product_pedagang"`
+	SummaryProductPedagang SummaryProductPedagang `json:"summary_product_pedagang,omitempty"`
+	Products               []Product              `json:"products,omitempty"`
 }
 
 type UpdateLocationRequest struct {

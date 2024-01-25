@@ -35,7 +35,6 @@ func (r *repository) CreateVariant(variant entity.Variant, userID string) (recor
 
 func (r *repository) GetVariantByID(id int64) (record entity.Variant, err error) {
 	db := r.db.Model(&Variant{}).Where("id = ?", id)
-	db = db.Preload("VariantType")
 
 	rec := Variant{}
 
