@@ -30,14 +30,14 @@ func (s *variantService) CreateVariant(variant entity.Variant, userID string) (r
 		return entity.Variant{}, errMsg
 	}
 
-	for i, variantType := range variant.VariantTypes {
-		variant.VariantTypes[i].VariantID = record.ID
+	for _, variantType := range variant.VariantTypes {
+		variantType.VariantID = record.ID
 		variantType, err = s.variantRepo.CreateVariantType(variantType, userID)
 		if err != nil {
 			errMsg := fmt.Errorf("[VariantService.CreateVariant] error when create variant type, err: %w", err)
 			return entity.Variant{}, errMsg
 		}
-		variant.VariantTypes[i] = variantType
+		record.VariantTypes = append(record.VariantTypes, variantType)
 	}
 
 	return record, nil
