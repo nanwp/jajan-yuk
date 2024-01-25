@@ -41,28 +41,49 @@ func (p *pedagangClient) CreatePedagang(pedagang entity.Pedagang) (entity.Pedaga
 	writer.WriteField("phone", pedagang.Phone)
 
 	// Open the existing file
-	file, err := os.Open(pedagang.Image)
-	if err != nil {
-		return entity.Pedagang{}, err
-	}
-	defer file.Close()
 
-	// Create a form file writer for the image file
-	fileWriter, err := writer.CreateFormFile("image", filepath.Base(pedagang.Image))
-	if err != nil {
-		return entity.Pedagang{}, err
+	if pedagang.Image != "" {
+		file, err := os.Open(pedagang.Image)
+		if err != nil {
+			return entity.Pedagang{}, err
+		}
+		defer file.Close()
+
+		// Create a form file writer for the image file
+		fileWriter, err := writer.CreateFormFile("image", filepath.Base(pedagang.Image))
+		if err != nil {
+			return entity.Pedagang{}, err
+		}
+
+		// Copy the file data to the writer
+		_, err = io.Copy(fileWriter, file)
+		if err != nil {
+			return entity.Pedagang{}, err
+		}
+
 	}
 
-	// Copy the file data to the writer
-	_, err = io.Copy(fileWriter, file)
+	err := writer.Close()
 	if err != nil {
 		return entity.Pedagang{}, err
 	}
+	// file, err := os.Open(pedagang.Image)
+	// if err != nil {
+	// 	return entity.Pedagang{}, err
+	// }
+	// defer file.Close()
 
-	err = writer.Close()
-	if err != nil {
-		return entity.Pedagang{}, err
-	}
+	// // Create a form file writer for the image file
+	// fileWriter, err := writer.CreateFormFile("image", filepath.Base(pedagang.Image))
+	// if err != nil {
+	// 	return entity.Pedagang{}, err
+	// }
+
+	// // Copy the file data to the writer
+	// _, err = io.Copy(fileWriter, file)
+	// if err != nil {
+	// 	return entity.Pedagang{}, err
+	// }
 
 	req, err := http.NewRequest(http.MethodPost, url, buf)
 	if err != nil {
@@ -86,8 +107,10 @@ func (p *pedagangClient) CreatePedagang(pedagang entity.Pedagang) (entity.Pedaga
 		return entity.Pedagang{}, err
 	}
 
-	if err := helper.DeleteImage(pedagang.Image); err != nil {
-		log.Println(err)
+	if pedagang.Image != "" {
+		if err := helper.DeleteImage(pedagang.Image); err != nil {
+			log.Println(err)
+		}
 	}
 
 	if response.Success == false {
