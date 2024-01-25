@@ -139,7 +139,7 @@ func (s *pedagangService) CreatePedagang(pedagang entity.Pedagang) (entity.Pedag
 	}
 
 	if pedagang.Image == "" {
-		pedagang.Image = "/images/default.png"
+		pedagang.Image = "images/default.png"
 	}
 
 	pedagang.IsActive = false
