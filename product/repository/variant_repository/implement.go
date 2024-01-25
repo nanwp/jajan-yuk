@@ -82,6 +82,7 @@ func (r *repository) GetVariantByUserCreated(userID string) (records []entity.Va
 	db := r.db.Model(&Variant{})
 
 	variants := []Variant{}
+	db = db.Order("name ASC")
 
 	if err := db.Find(&variants, "created_by = ?", userID).Error; err != nil {
 		return records, err

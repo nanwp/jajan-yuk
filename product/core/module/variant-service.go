@@ -68,6 +68,7 @@ func (s *variantService) GetVariantByUserCreated(userID string) (records []entit
 
 	for i, record := range records {
 		records[i].VariantTypes = mapVariantTypes[record.ID]
+		records[i].CountVariantType = int64(len(mapVariantTypes[record.ID]))
 	}
 
 	return records, nil
