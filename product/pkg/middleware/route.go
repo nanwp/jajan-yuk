@@ -29,6 +29,7 @@ func InitRouter(cfg config.Config, db *gorm.DB) (http.Handler, conn.CacheService
 
 	router.HandleFunc("/api/v1/variant/ids", httpHandler.GetVariantByIDs).Methods("GET")
 	router.HandleFunc("/api/v1/variant", httpHandler.GetVariantByUserCreated).Methods("GET")
+	router.HandleFunc("/api/v1/variant", httpHandler.CreateVariant).Methods("POST")
 
 	handler := c.Handler(router)
 
