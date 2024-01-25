@@ -54,6 +54,13 @@ func (a *authUsecase) Login(params entity.LoginRequest) (response entity.LoginRe
 	response.AccessToken = accessToken
 	response.RefreshToken = refreshToken
 
+	role, err := a.authRepo.GetRoleByID(response.User.Role.ID)
+	if err != nil {
+		return response, err
+	}
+
+	response.User.Role = role
+
 	if err := a.authRepo.StoredAccessTokenInRedisV2(accessToken, response.User.ID); err != nil {
 		return response, err
 	}
