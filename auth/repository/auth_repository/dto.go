@@ -2,9 +2,10 @@ package auth_repository
 
 import (
 	"database/sql"
+	"time"
+
 	"github.com/nanwp/jajan-yuk/auth/core/entity"
 	"gorm.io/gorm"
-	"time"
 )
 
 type User struct {
@@ -16,6 +17,7 @@ type User struct {
 	ActivatedAt sql.NullTime   `gorm:"column:activated_at" json:"activated_at"`
 	Image       string         `gorm:"column:image;type:varchar(255)" json:"image"`
 	RoleID      string         `gorm:"column:role_id;type:uuid" json:"role_id"`
+	Address     string         `gorm:"column:address;type:varchar(255)" json:"address"`
 	CreatedAt   time.Time      `gorm:"column:created_at" json:"created_at"`
 	UpdatedAt   time.Time      `gorm:"column:updated_at" json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`
@@ -54,6 +56,7 @@ func (u *User) ToEntity() entity.User {
 		Password: u.Password,
 		Email:    u.Email,
 		Image:    u.Image,
+		Address:  u.Address,
 		Role: entity.Role{
 			ID: u.RoleID,
 		},

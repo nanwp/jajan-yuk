@@ -60,6 +60,7 @@ type User struct {
 	Email       string    `json:"email"`
 	ActivatedAt time.Time `json:"activated_at"`
 	Image       string    `json:"image"`
+	Address     string    `json:"address"`
 	Role        Role      `json:"role"`
 }
 
