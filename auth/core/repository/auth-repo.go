@@ -13,4 +13,8 @@ type AuthRepository interface {
 	DeleteRefreshTokenFromRedis(token, userID string) (err error)
 	ValidateSecretKey(key string) (secretKey entity.SecretKey, err error)
 	GetRoleByID(id string) (role entity.Role, err error)
+
+	StoredAccessTokenInRedisV2(token, userID string) (err error)
+	GetAccessTokenFromRedisV2(token string) (resp string, err error)
+	DeleteAccessTokenFromRedisV2(token, userID string) (err error)
 }

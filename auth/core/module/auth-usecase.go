@@ -54,14 +54,7 @@ func (a *authUsecase) Login(params entity.LoginRequest) (response entity.LoginRe
 	response.AccessToken = accessToken
 	response.RefreshToken = refreshToken
 
-	role, err := a.authRepo.GetRoleByID(response.User.Role.ID)
-	if err != nil {
-		return response, err
-	}
-
-	response.User.Role = role
-
-	if err := a.authRepo.StoredAccessTokenInRedis(accessToken, response.User); err != nil {
+	if err := a.authRepo.StoredAccessTokenInRedisV2(accessToken, response.User.ID); err != nil {
 		return response, err
 	}
 
@@ -125,7 +118,7 @@ func (a *authUsecase) RefreshToken(params entity.RefreshTokenRequest) (response 
 	response.RefreshToken = refreshToken
 	response.User = user
 
-	if err := a.authRepo.StoredAccessTokenInRedis(accessToken, user); err != nil {
+	if err := a.authRepo.StoredAccessTokenInRedisV2(accessToken, userID); err != nil {
 		return response, err
 	}
 
@@ -138,10 +131,22 @@ func (a *authUsecase) RefreshToken(params entity.RefreshTokenRequest) (response 
 }
 
 func (a *authUsecase) GetCurrentUser(accessToken string) (response entity.GetCurrentUserResponse, err error) {
-	user, err := a.authRepo.GetAccessTokenFromRedis(accessToken)
+	userID, err := a.authRepo.GetAccessTokenFromRedisV2(accessToken)
 	if err != nil {
 		return response, err
 	}
+
+	user, err := a.authRepo.GetUserByID(userID)
+	if err != nil {
+		return response, err
+	}
+
+	role, err := a.authRepo.GetRoleByID(user.Role.ID)
+	if err != nil {
+		return response, err
+	}
+
+	user.Role = role
 
 	response.User = user
 
@@ -155,7 +160,7 @@ func (a *authUsecase) Logout(token string) (err error) {
 		return err
 	}
 
-	if err := a.authRepo.DeleteAccessTokenFromRedis(token, response.User.ID); err != nil {
+	if err := a.authRepo.DeleteAccessTokenFromRedisV2(token, response.User.ID); err != nil {
 		return err
 	}
 

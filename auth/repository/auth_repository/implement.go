@@ -3,12 +3,13 @@ package auth_repository
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/gomodule/redigo/redis"
 	"github.com/nanwp/jajan-yuk/auth/core/entity"
 	repositoryintf "github.com/nanwp/jajan-yuk/auth/core/repository"
 	"github.com/nanwp/jajan-yuk/auth/pkg/helper"
 	"gorm.io/gorm"
-	"time"
 )
 
 type repository struct {
@@ -168,4 +169,44 @@ func (r *repository) GetRoleByID(id string) (role entity.Role, err error) {
 	}
 
 	return result.ToEntity(), nil
+}
+
+func (r *repository) StoredAccessTokenInRedisV2(token, userID string) (err error) {
+	conn := r.redis.Get()
+	defer conn.Close()
+
+	redisKey := fmt.Sprintf("access_token:%s", token)
+	expired := time.Now().Add(entity.LOGIN_EXPIRATION_DURATION).Unix()
+
+	_, err = conn.Do("SET", redisKey, userID, "EX", expired)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *repository) GetAccessTokenFromRedisV2(token string) (resp string, err error) {
+	conn := r.redis.Get()
+	defer conn.Close()
+
+	redisKey := fmt.Sprintf("access_token:%s", token)
+
+	resp, err = redis.String(conn.Do("GET", redisKey))
+	if err != nil {
+		return resp, err
+	}
+	return resp, nil
+}
+
+func (r *repository) DeleteAccessTokenFromRedisV2(token, userID string) (err error) {
+	conn := r.redis.Get()
+	defer conn.Close()
+
+	redisKey := fmt.Sprintf("access_token:%s", token)
+
+	_, err = conn.Do("DEL", redisKey)
+	if err != nil {
+		return err
+	}
+	return nil
 }
