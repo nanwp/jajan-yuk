@@ -10,6 +10,7 @@ import (
 )
 
 type ProductService interface {
+	GetProductByID(id int64) (record entity.Product, err error)
 	GetProductByIDs(ids []int64) (records []entity.Product, err error)
 	GetProductByUserCreated(userID string) (records []entity.Product, err error)
 	GetProductByPedagangID(pedagangID string) (records []entity.Product, err error)
@@ -30,6 +31,47 @@ func NewProductService(cfg config.Config, productRepo repository.ProductRepo, va
 		variantService:  variantService,
 		categoryService: categoryService,
 	}
+}
+
+func (s *productService) GetProductByID(id int64) (record entity.Product, err error) {
+	record, err = s.productRepo.GetProductByID(id)
+	if err != nil {
+		return entity.Product{}, err
+	}
+
+	categoryIDs := []int64{}
+	categoryIDs = append(categoryIDs, record.Category.ID)
+
+	categories, err := s.categoryService.GetCategoryByIDs(categoryIDs)
+	if err != nil {
+		return entity.Product{}, err
+	}
+
+	mapCategories := map[int64]entity.Category{}
+	for _, category := range categories {
+		mapCategories[category.ID] = category
+	}
+
+	variantIDs := []int64{}
+	for _, variant := range record.Variant {
+		variantIDs = append(variantIDs, variant.ID)
+	}
+
+	variants, err := s.variantService.GetVariantByIDs(variantIDs)
+	if err != nil {
+		return entity.Product{}, err
+	}
+
+	mapVariants := map[int64][]entity.Variant{}
+	for _, variant := range variants {
+		mapVariants[variant.ID] = append(mapVariants[variant.ID], variant)
+	}
+
+	record.Category = mapCategories[record.Category.ID]
+	record.Variant = mapVariants[record.ID]
+	record.Image = fmt.Sprintf("%s/%s", s.cfg.BaseURL, record.Image)
+
+	return record, nil
 }
 
 func (s *productService) GetProductByPedagangID(pedagangID string) (records []entity.Product, err error) {

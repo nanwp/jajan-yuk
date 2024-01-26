@@ -49,6 +49,8 @@ func InitRouter(cfg config.Config, db *gorm.DB) (http.Handler, conn.CacheService
 	// router.HandleFunc("/api/v1/product/ids", httpHandler.GetProductByIDs).Methods("GET")
 	router.HandleFunc("/api/v1/product/pedagang", httpHandler.GetProductByUserID).Methods("GET")
 
+	router.HandleFunc("/images/{image_name}", httpHandler.GetImage).Methods("GET")
+
 	handler := c.Handler(router)
 
 	return handler, coreRedis

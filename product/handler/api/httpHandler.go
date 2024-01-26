@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
+	"github.com/gorilla/mux"
 	"github.com/nanwp/jajan-yuk/product/core/entity"
 	"github.com/nanwp/jajan-yuk/product/core/module"
 	"github.com/nanwp/jajan-yuk/product/pkg/helper"
@@ -14,6 +16,7 @@ import (
 )
 
 type HTTPHandler interface {
+	GetImage(w http.ResponseWriter, r *http.Request)
 	GetProductByUserCreated(w http.ResponseWriter, r *http.Request)
 	GetProductByUserID(w http.ResponseWriter, r *http.Request)
 	CreateProduct(w http.ResponseWriter, r *http.Request)
@@ -53,6 +56,20 @@ func (r *response) MarshalJSON() ([]byte, error) {
 	}{
 		Alias: (*Alias)(r),
 	})
+}
+
+func (h *httpHandler) GetImage(w http.ResponseWriter, r *http.Request) {
+	imageName := mux.Vars(r)["image_name"]
+
+	_, err := os.Open("./images/" + imageName)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	http.ServeFile(w, r, "./images/"+imageName)
+	return
 }
 
 func (h *httpHandler) GetProductByUserCreated(w http.ResponseWriter, r *http.Request) {
